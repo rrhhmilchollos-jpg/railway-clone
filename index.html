@@ -216,10 +216,11 @@ pre.log-box {
 const services = [
   { id: 'mongodb', name: 'MongoDB', sub: '', icon: '&#127811;', volume: 'volumen de mongodb', x: 60, y: 260 },
   { id: 'postgres', name: 'Postgres', sub: '', icon: '&#128024;', volume: 'volumen de postgres', x: 340, y: 120 },
-  { id: 'backend', name: 'backend', sub: 'backend-production', icon: '&#128025;', volume: 'backend-volumen', x: 340, y: 300, featured: true, apiName: 'backend' }
+  { id: 'backend', name: 'backend', sub: 'backend-production', icon: '&#128025;', volume: 'backend-volumen', x: 340, y: 300, apiName: 'backend' }
 ];
 const connections = [ { from: 'postgres', to: 'backend' } ];
 
+let selectedId = null;
 const nodesLayer = document.getElementById('nodes-layer');
 const svg = document.getElementById('connectors');
 
@@ -227,7 +228,7 @@ function renderNodes() {
   nodesLayer.innerHTML = '';
   services.forEach(s => {
     const el = document.createElement('div');
-    el.className = 'node' + (s.featured ? ' featured' : '');
+    el.className = 'node' + (s.id === selectedId ? ' featured' : '');
     el.style.left = s.x + 'px';
     el.style.top = s.y + 'px';
     el.dataset.id = s.id;
@@ -283,6 +284,8 @@ let currentService = null;
 
 function openDrawer(service) {
   currentService = service;
+  selectedId = service.id;
+  renderNodes();
   dName.textContent = service.name;
   dIcon.innerHTML = service.icon;
   overlay.classList.add('open');
@@ -292,6 +295,8 @@ function openDrawer(service) {
 function closeDrawer() {
   overlay.classList.remove('open');
   drawer.classList.remove('open');
+  selectedId = null;
+  renderNodes();
 }
 document.getElementById('d-close').onclick = closeDrawer;
 overlay.onclick = closeDrawer;
@@ -334,7 +339,7 @@ async function renderVariables() {
       return;
     }
     const data = await res.json();
-    const lines = (data.env || '').split('\n').filter(l => l.includes('='));
+    const lines = (data.env || '').split('\\n').filter(l => l.includes('='));
     drawerBody.innerHTML = lines.map(l => {
       const [k, ...rest] = l.split('=');
       const v = rest.join('=');

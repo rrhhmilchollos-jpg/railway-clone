@@ -60,7 +60,7 @@ const server = http.createServer((req, res) => {
         const service = req.url.split('/').pop();
         let dockerCmd = 'docker logs --tail 30 coolify';
         if (service === 'Postgres') dockerCmd = 'docker logs --tail 30 postgres-zocoia-postgres-1';
-        if (service === 'zocoia') dockerCmd = 'docker logs --tail 30 coolify';
+        if (service === 'backend') dockerCmd = 'docker logs --tail 30 coolify';
 
         exec(dockerCmd, (err, stdout, stderr) => {
             res.writeHead(200, { 'Content-Type': 'text/plain; charset=utf-8' });
