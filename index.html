@@ -1,164 +1,377 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <title>Railway - Panel de Control Real</title>
-    <style>
-        body { 
-            background-color: #0b0b0f; background-image: radial-gradient(#1e1e24 1px, transparent 1px); background-size: 24px 24px;
-            color: #d1d5db; font-family: system-ui, -apple-system, sans-serif; margin: 0; padding: 0; height: 100vh; overflow: hidden;
-            display: flex; flex-direction: column;
-        }
-        header { height: 56px; background-color: #0e0e12; display: flex; align-items: center; justify-content: space-between; padding: 0 24px; box-sizing: border-box; border-bottom: 1px solid #2d3748; z-index: 30; }
-        .logo-container { display: flex; align-items: center; gap: 12px; }
-        .logo-r { width: 20px; height: 20px; background: white; color: black; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 12px; }
-        .project-title { font-size: 14px; font-weight: 600; color: #9ca3af; }
-        .tag-prod { font-size: 12px; background: #1f2937; color: #9ca3af; padding: 2px 8px; border-radius: 4px; }
-        .btn-add { background: #9333ea; color: white; border: none; padding: 6px 16px; border-radius: 8px; font-weight: 600; font-size: 12px; cursor: pointer; }
-        .tag-expired { font-size: 12px; background: #451a03; color: #f97316; border: 1px solid #7c2d12; padding: 4px 12px; border-radius: 9999px; font-weight: 500; margin-right: 12px; }
-        main { flex: 1; display: flex; align-items: center; justify-content: center; gap: 80px; padding: 40px; position: relative; z-index: 10; }
-        .card { width: 240px; background: #14141a; border: 1px solid #2d3748; border-radius: 12px; padding: 20px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); transition: all 0.2s; cursor: pointer; }
-        .card:hover { border-color: #4b5563; transform: translateY(-2px); }
-        .card.main-app { border-color: #9333ea; background: #16161f; }
-        .card-title { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; font-weight: bold; color: #f3f4f6; }
-        .status { display: flex; align-items: center; gap: 8px; font-size: 12px; color: #a1a1aa; margin-bottom: 16px; }
-        .dot { width: 8px; height: 8px; background: #6b7280; border-radius: 50%; }
-        .dot.online { background: #22c55e; }
-        .footer-card { font-size: 12px; color: #6b7280; border-top: 1px solid #1f2937; padding-top: 12px; display: flex; align-items: center; gap: 6px; }
-        .app-url { font-size: 10px; color: #6b7280; margin: -10px 0 16px 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        .drawer { position: fixed; top: 56px; right: -500px; width: 450px; height: calc(100vh - 56px); background: #0e0e12; border-left: 1px solid #2d3748; box-shadow: -10px 0 30px rgba(0,0,0,0.5); transition: right 0.3s ease; z-index: 40; display: flex; flex-direction: column; }
-        .drawer.open { right: 0; }
-        .drawer-header { padding: 20px; border-bottom: 1px solid #2d3748; display: flex; justify-content: space-between; align-items: center; }
-        .drawer-tabs { display: flex; background: #14141a; border-bottom: 1px solid #2d3748; padding: 0 10px; }
-        .tab-btn { padding: 12px 16px; background: transparent; border: none; color: #9ca3af; cursor: pointer; font-size: 13px; font-weight: 500; border-bottom: 2px solid transparent; }
-        .tab-btn.active { color: #a855f7; border-bottom-color: #a855f7; }
-        .drawer-content { flex: 1; padding: 20px; overflow-y: auto; }
-        .tab-panel { display: none; }
-        .tab-panel.active { display: block; }
-        textarea { width: 100%; height: 250px; background: #07070a; border: 1px solid #2d3748; border-radius: 8px; color: #34d399; font-family: monospace; padding: 12px; box-sizing: border-box; resize: none; }
-        .logs-box { background: #07070a; border: 1px solid #2d3748; border-radius: 8px; padding: 12px; font-family: monospace; font-size: 11px; color: #a7f3d0; height: 300px; overflow-y: auto; white-space: pre-wrap; }
-        .connect-box { display: flex; flex-direction: column; align-items: center; gap: 24px; position: relative; }
-        .arrow-container { width: 24px; height: 32px; display: flex; align-items: center; justify-content: center; }
-        .arrow-svg { width: 32px; height: 32px; fill: none; stroke: #4b5563; stroke-width: 2.5; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Panel de control</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background: #0b0b0f;
+  background-image: radial-gradient(#1c1c22 1px, transparent 1px);
+  background-size: 22px 22px;
+  color: #c9c9d1;
+  height: 100vh;
+  overflow: hidden;
+  user-select: none;
+}
+#app { display: flex; height: 100vh; }
+
+#sidebar {
+  width: 56px;
+  background: #0e0e13;
+  border-right: 1px solid #1e1e26;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 14px 0;
+  gap: 6px;
+}
+#sidebar .logo {
+  width: 30px; height: 30px; border-radius: 8px;
+  background: #6c4de6; display: flex; align-items: center; justify-content: center;
+  font-weight: 700; color: white; font-size: 13px; margin-bottom: 18px;
+}
+.side-btn {
+  width: 38px; height: 38px; border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; color: #7a7a88; transition: background 0.15s, color 0.15s;
+}
+.side-btn:hover { background: #1a1a22; color: #c9c9d1; }
+.side-btn.active { background: #1a1a22; color: #a78bfa; }
+#sidebar .spacer { flex: 1; }
+#sidebar .avatar {
+  width: 30px; height: 30px; border-radius: 50%;
+  background: linear-gradient(135deg, #a78bfa, #67e8b0);
+}
+
+#main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+
+#topbar {
+  height: 52px; border-bottom: 1px solid #1e1e26; background: #0e0e13;
+  display: flex; align-items: center; justify-content: space-between; padding: 0 18px;
+}
+#topbar .crumbs { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+#topbar .crumbs .proj { color: #d9d9df; font-weight: 500; }
+#topbar .crumbs .sep { color: #4a4a55; }
+#topbar .crumbs .env { color: #8a8a96; background: #1a1a22; padding: 3px 9px; border-radius: 6px; font-size: 12px; }
+#topbar .right { display: flex; align-items: center; gap: 10px; }
+.pill { font-size: 11px; padding: 5px 11px; border-radius: 999px; font-weight: 500; }
+.pill-status { background: #14251c; color: #67e8a0; border: 1px solid #1e3d2c; display: flex; align-items: center; gap: 6px; }
+.pill-status .dot { width: 6px; height: 6px; border-radius: 50%; background: #4ade80; }
+.btn-primary {
+  background: #6c4de6; color: white; font-size: 12.5px; font-weight: 500;
+  padding: 7px 14px; border-radius: 8px; border: none; cursor: pointer;
+}
+.btn-primary:hover { background: #5c3dd6; }
+
+#canvas-wrap { flex: 1; position: relative; overflow: hidden; }
+#canvas {
+  position: absolute; inset: 0;
+  background-image: radial-gradient(#1c1c22 1.4px, transparent 1.4px);
+  background-size: 24px 24px;
+}
+.node {
+  position: absolute; width: 220px;
+  background: #14141a; border: 1px solid #24242e; border-radius: 12px;
+  padding: 14px; cursor: pointer; transition: border-color 0.15s;
+}
+.node:hover { border-color: #3a3a48; }
+.node.featured { border-color: #6c4de6; }
+.node-head { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }
+.node-icon { font-size: 18px; width: 22px; text-align: center; }
+.node-name { font-size: 13.5px; font-weight: 600; color: #e4e4ea; }
+.node-sub { font-size: 10.5px; color: #6a6a76; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.node-status { display: flex; align-items: center; gap: 6px; font-size: 11.5px; margin: 10px 0; }
+.node-status .dot { width: 6px; height: 6px; border-radius: 50%; background: #4ade80; }
+.node-status.online { color: #67e8a0; }
+.node-volume {
+  font-size: 10.5px; color: #6a6a76; border-top: 1px solid #1e1e26;
+  padding-top: 9px; display: flex; align-items: center; gap: 6px;
+}
+.connector { position: absolute; pointer-events: none; }
+
+#zoom-controls {
+  position: absolute; bottom: 18px; left: 18px;
+  background: #14141a; border: 1px solid #24242e; border-radius: 10px;
+  display: flex; flex-direction: column; gap: 2px; padding: 4px;
+}
+#zoom-controls button {
+  width: 30px; height: 30px; border: none; background: transparent; color: #8a8a96;
+  border-radius: 6px; cursor: pointer; font-size: 13px;
+}
+#zoom-controls button:hover { background: #1e1e26; color: #d9d9df; }
+
+#overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.5);
+  opacity: 0; pointer-events: none; transition: opacity 0.2s;
+}
+#overlay.open { opacity: 1; pointer-events: auto; }
+
+#drawer {
+  position: fixed; top: 0; right: 0; height: 100vh; width: 420px;
+  background: #101015; border-left: 1px solid #1e1e26;
+  transform: translateX(100%); transition: transform 0.25s ease; z-index: 10;
+  display: flex; flex-direction: column;
+}
+#drawer.open { transform: translateX(0); }
+#drawer-head {
+  padding: 16px 18px; border-bottom: 1px solid #1e1e26;
+  display: flex; align-items: center; justify-content: space-between;
+}
+#drawer-head .info { display: flex; align-items: center; gap: 10px; }
+#drawer-head .icon { font-size: 20px; }
+#drawer-head .name { font-size: 14px; font-weight: 600; color: #e4e4ea; }
+#drawer-head .close { cursor: pointer; color: #6a6a76; font-size: 18px; padding: 4px; }
+#drawer-tabs { display: flex; gap: 2px; padding: 8px 12px 0; border-bottom: 1px solid #1e1e26; overflow-x: auto; }
+.tab-btn {
+  padding: 8px 10px; font-size: 12px; color: #7a7a88; cursor: pointer;
+  border-bottom: 2px solid transparent; white-space: nowrap;
+}
+.tab-btn.active { color: #e4e4ea; border-bottom-color: #6c4de6; }
+#drawer-body { flex: 1; overflow-y: auto; padding: 16px 18px; font-size: 12.5px; }
+
+.info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+.info-card { background: #14141a; border: 1px solid #1e1e26; border-radius: 10px; padding: 12px; }
+.info-card .lbl { font-size: 10.5px; color: #6a6a76; margin-bottom: 4px; }
+.info-card .val { font-size: 12.5px; color: #d9d9df; font-family: monospace; }
+
+.var-row { display: flex; justify-content: space-between; padding: 9px 0; border-bottom: 1px solid #1a1a22; font-family: monospace; font-size: 11.5px; }
+.var-key { color: #d9d9df; }
+.var-val { color: #6a6a76; }
+
+pre.log-box {
+  background: #08080b; border: 1px solid #1e1e26; border-radius: 8px;
+  padding: 10px; font-size: 11px; color: #9a9aa6; max-height: 260px; overflow-y: auto;
+  white-space: pre-wrap; word-break: break-word;
+}
+.field { margin-bottom: 12px; }
+.field label { display: block; font-size: 11.5px; color: #8a8a96; margin-bottom: 5px; }
+.field input {
+  width: 100%; background: #14141a; border: 1px solid #24242e; border-radius: 8px;
+  padding: 8px 10px; color: #d9d9df; font-size: 12.5px; font-family: monospace;
+}
+.muted-note { font-size: 11px; color: #55555f; margin-top: 4px; }
+</style>
 </head>
 <body>
+<div id="app">
+  <div id="sidebar">
+    <div class="logo">P</div>
+    <div class="side-btn active" title="Lienzo">&#9633;</div>
+    <div class="side-btn" title="Métricas">&#8905;</div>
+    <div class="side-btn" title="Registros">&#8801;</div>
+    <div class="side-btn" title="Ajustes">&#9881;</div>
+    <div class="spacer"></div>
+    <div class="avatar"></div>
+  </div>
 
-    <header>
-        <div class="logo-container">
-            <div class="logo-r">R</div>
-            <span class="project-title">espontaneidad perfecta</span>
-            <span class="tag-prod">producción</span>
-        </div>
-        <div><span class="tag-expired">Prueba completada</span><button class="btn-add">+ Agregar</button></div>
-    </header>
-
-    <main>
-        <div class="card" onclick="openDrawer('mongodb', 'postgres-zocoia-postgres-1')">
-            <div class="card-title"><span>🍃</span><span>MongoDB</span></div>
-            <div class="status"><span id="dot-mongo" class="dot online"></span>En línea (Simulado)</div>
-            <div class="footer-card">📁 volumen de mongodb</div>
-        </div>
-
-        <div class="connect-box">
-            <div class="card" onclick="openDrawer('Postgres', 'postgres-zocoia-postgres-1')">
-                <div class="card-title"><span style="color:#60a5fa">🐘</span><span>Postgres</span></div>
-                <div class="status"><span id="dot-postgres" class="dot"></span><span id="txt-postgres">Comprobando...</span></div>
-                <div class="footer-card">📁 volumen de postgres</div>
-            </div>
-
-            <div class="arrow-container">
-                <svg class="arrow-svg" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 19V5m0 0l-4 4m4-4l4 4" /></svg>
-            </div>
-
-            <div class="card main-app" onclick="openDrawer('zocoia', 'zocoia-gateway')">
-                <div class="card-title"><span>🐙</span><span>zocoia</span></div>
-                <div class="app-url">zocoia-production.up.railway.app</div>
-                <div class="status"><span id="dot-zocoia" class="dot"></span><span id="txt-zocoia">Comprobando...</span></div>
-                <div class="footer-card">📁 zocoia-volumen</div>
-            </div>
-        </div>
-    </main>
-
-    <div id="railwayDrawer" class="drawer">
-        <div class="drawer-header">
-            <h2 id="drawerTitle" style="margin:0; font-size:18px; color:white;">Servicio</h2>
-            <button style="background:transparent; border:none; color:#9ca3af; font-size:20px; cursor:pointer;" onclick="closeDrawer()">×</button>
-        </div>
-        <div class="drawer-tabs">
-            <button class="tab-btn active" onclick="switchTab(event, 'tab-deploy')">Despliegues</button>
-            <button class="tab-btn" onclick="switchTab(event, 'tab-vars')">Variables</button>
-            <button class="tab-btn" onclick="switchTab(event, 'tab-logs')">Consola Real</button>
-        </div>
-        <div class="drawer-content">
-            <div id="tab-deploy" class="tab-panel active">
-                <div style="padding:12px; background:#14141a; border:1px solid #2d3748; border-radius:8px; display:flex; justify-content:space-between; align-items:center;">
-                    <div><div style="color:white; font-weight:600; font-size:14px;">Producción Activa</div><div style="color:#6b7280; font-size:12px;">Mapeado en tiempo real</div></div>
-                    <span style="color:#22c55e; font-size:12px; background:#14532d; padding:2px 8px; border-radius:4px;">Live</span>
-                </div>
-            </div>
-            <div id="tab-vars" class="tab-panel">
-                <p style="font-size:12px; color:#9ca3af; margin-top:0;">Pega aquí tus claves secretas en bloque (.env) para guardarlas en el servidor:</p>
-                <textarea id="envBox" placeholder="KEY=valor"></textarea>
-                <button class="btn-add" style="margin-top:12px; width:100%;" onclick="saveVarsToServer()">Guardar en Producción Real</button>
-            </div>
-            <div id="tab-logs" class="tab-panel">
-                <div id="logsContent" class="logs-box">Cargando logs del servidor en vivo...</div>
-            </div>
-        </div>
+  <div id="main">
+    <div id="topbar">
+      <div class="crumbs">
+        <span class="proj" id="proj-name">producción</span>
+      </div>
+      <div class="right">
+        <span class="pill pill-status"><span class="dot"></span>en línea</span>
+        <button class="btn-primary" id="btn-add">+ Agregar</button>
+      </div>
     </div>
 
-    <script>
-        let currentContainer = '';
-        function checkRealStatus() {
-            fetch('/api/status').then(res => res.json()).then(data => {
-                const list = data.containers.join(' ');
-                
-                const pgActive = list.includes('postgres-zocoia');
-                document.getElementById('dot-postgres').className = 'dot ' + (pgActive ? 'online' : '');
-                document.getElementById('txt-postgres').innerText = pgActive ? 'En línea' : 'Interrumpido';
+    <div id="canvas-wrap">
+      <div id="canvas">
+        <svg class="connector" id="connectors" style="position:absolute; inset:0; width:100%; height:100%;"></svg>
+        <div id="nodes-layer"></div>
+      </div>
+      <div id="zoom-controls">
+        <button id="zoom-in">+</button>
+        <button id="zoom-out">&minus;</button>
+        <button id="zoom-fit">&#9678;</button>
+      </div>
+    </div>
+  </div>
+</div>
 
-                const zocoiaActive = list.includes('zocoia-gateway') || list.includes('railway-clone');
-                document.getElementById('dot-zocoia').className = 'dot ' + (zocoiaActive ? 'online' : '');
-                document.getElementById('txt-zocoia').innerText = zocoiaActive ? 'En línea' : 'Interrumpido';
-            });
-        }
+<div id="overlay"></div>
+<div id="drawer">
+  <div id="drawer-head">
+    <div class="info">
+      <span class="icon" id="d-icon">&#128230;</span>
+      <span class="name" id="d-name">Servicio</span>
+    </div>
+    <span class="close" id="d-close">&times;</span>
+  </div>
+  <div id="drawer-tabs">
+    <div class="tab-btn active" data-tab="overview">Resumen</div>
+    <div class="tab-btn" data-tab="deployments">Despliegues</div>
+    <div class="tab-btn" data-tab="variables">Variables</div>
+    <div class="tab-btn" data-tab="metrics">Métricas</div>
+    <div class="tab-btn" data-tab="logs">Registros</div>
+    <div class="tab-btn" data-tab="settings">Ajustes</div>
+  </div>
+  <div id="drawer-body"></div>
+</div>
 
-        function openDrawer(serviceName, containerName) {
-            currentContainer = containerName;
-            document.getElementById('drawerTitle').innerText = serviceName;
-            document.getElementById('railwayDrawer').classList.add('open');
-            
-            if(serviceName === 'zocoia') {
-                document.getElementById('envBox').value = "PORT=8080\nNODE_ENV=production\nDB_HOST=165.227.130.179\nDB_PORT=5432\nDB_DATABASE=railway\nDB_USERNAME=postgres\nDB_PASSWORD=DesiyivanREDACTED\nDATABASE_URL=postgresql://postgres:DesiyivanREDACTED@165.227.130.179:5432/railway";
-            } else {
-                document.getElementById('envBox').value = "# Parámetros de la base de datos interna";
-            }
+<script>
+const services = [
+  { id: 'mongodb', name: 'MongoDB', sub: '', icon: '&#127811;', volume: 'volumen de mongodb', x: 60, y: 260 },
+  { id: 'postgres', name: 'Postgres', sub: '', icon: '&#128024;', volume: 'volumen de postgres', x: 340, y: 120 },
+  { id: 'backend', name: 'backend', sub: 'backend-production', icon: '&#128025;', volume: 'backend-volumen', x: 340, y: 300, featured: true, apiName: 'backend' }
+];
+const connections = [ { from: 'postgres', to: 'backend' } ];
 
-            document.getElementById('logsContent').innerText = "Conectando al stream del contenedor...";
-            fetch('/api/logs/' + containerName).then(res => res.text()).then(text => {
-                document.getElementById('logsContent').innerText = text;
-            });
-        }
+const nodesLayer = document.getElementById('nodes-layer');
+const svg = document.getElementById('connectors');
 
-        function closeDrawer() { document.getElementById('railwayDrawer').classList.remove('open'); }
-        function switchTab(e, tabId) {
-            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-            document.querySelectorAll('.tab-panel').forEach(panel => panel.classList.remove('active'));
-            e.target.classList.add('active');
-            document.getElementById(tabId).classList.add('active');
-        }
+function renderNodes() {
+  nodesLayer.innerHTML = '';
+  services.forEach(s => {
+    const el = document.createElement('div');
+    el.className = 'node' + (s.featured ? ' featured' : '');
+    el.style.left = s.x + 'px';
+    el.style.top = s.y + 'px';
+    el.dataset.id = s.id;
+    el.innerHTML = `
+      <div class="node-head">
+        <span class="node-icon">${s.icon}</span>
+        <div>
+          <div class="node-name">${s.name}</div>
+          ${s.sub ? `<div class="node-sub">${s.sub}</div>` : ''}
+        </div>
+      </div>
+      <div class="node-status online"><span class="dot"></span>en línea</div>
+      <div class="node-volume">&#128193; ${s.volume}</div>
+    `;
+    el.addEventListener('click', () => openDrawer(s));
+    nodesLayer.appendChild(el);
+  });
+  drawConnectors();
+}
 
-        function saveVarsToServer() {
-            const data = document.getElementById('envBox').value;
-            fetch('/api/save-vars', { method: 'POST', body: data }).then(res => res.json()).then(res => {
-                alert(res.message);
-                closeDrawer();
-            });
-        }
+function drawConnectors() {
+  svg.innerHTML = '<defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="4" refY="7" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#3a3a48"/></marker></defs>';
+  connections.forEach(c => {
+    const from = services.find(s => s.id === c.from);
+    const to = services.find(s => s.id === c.to);
+    if (!from || !to) return;
+    const x1 = from.x + 110, y1 = from.y + 120;
+    const x2 = to.x + 110, y2 = to.y;
+    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    path.setAttribute('d', `M ${x1} ${y1} L ${x2} ${y2 - 6}`);
+    path.setAttribute('stroke', '#3a3a48');
+    path.setAttribute('stroke-width', '1.6');
+    path.setAttribute('fill', 'none');
+    path.setAttribute('marker-end', 'url(#arrow)');
+    svg.appendChild(path);
+  });
+}
 
-        setInterval(checkRealStatus, 3000);
-        checkRealStatus();
-    </script>
+renderNodes();
+
+let scale = 1;
+document.getElementById('zoom-in').onclick = () => { scale = Math.min(1.4, scale + 0.1); applyZoom(); };
+document.getElementById('zoom-out').onclick = () => { scale = Math.max(0.6, scale - 0.1); applyZoom(); };
+document.getElementById('zoom-fit').onclick = () => { scale = 1; applyZoom(); };
+function applyZoom() { document.getElementById('canvas').style.transform = `scale(${scale})`; document.getElementById('canvas').style.transformOrigin = 'top left'; }
+
+const overlay = document.getElementById('overlay');
+const drawer = document.getElementById('drawer');
+const dName = document.getElementById('d-name');
+const dIcon = document.getElementById('d-icon');
+const drawerBody = document.getElementById('drawer-body');
+let currentService = null;
+
+function openDrawer(service) {
+  currentService = service;
+  dName.textContent = service.name;
+  dIcon.innerHTML = service.icon;
+  overlay.classList.add('open');
+  drawer.classList.add('open');
+  setActiveTab('overview');
+}
+function closeDrawer() {
+  overlay.classList.remove('open');
+  drawer.classList.remove('open');
+}
+document.getElementById('d-close').onclick = closeDrawer;
+overlay.onclick = closeDrawer;
+document.getElementById('btn-add').onclick = () => alert('Aquí conectarías el flujo real de "añadir servicio" contra tu API.');
+
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => setActiveTab(btn.dataset.tab));
+});
+
+function setActiveTab(tab) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+  if (tab === 'overview') renderOverview();
+  if (tab === 'deployments') renderDeployments();
+  if (tab === 'variables') renderVariables();
+  if (tab === 'metrics') renderMetrics();
+  if (tab === 'logs') renderLogs();
+  if (tab === 'settings') renderSettings();
+}
+
+function renderOverview() {
+  drawerBody.innerHTML = `
+    <div class="info-grid">
+      <div class="info-card"><div class="lbl">Estado</div><div class="val" style="color:#67e8a0">En línea</div></div>
+      <div class="info-card"><div class="lbl">Volumen</div><div class="val">${currentService.volume}</div></div>
+    </div>
+    <div class="muted-note">Datos en vivo desde /api/status cuando el backend lo expone por servicio.</div>
+  `;
+}
+
+function renderDeployments() {
+  drawerBody.innerHTML = `<div class="muted-note">Aún no hay historial de despliegues expuesto por la API. Conecta esta pestaña a un endpoint tipo /api/deployments/${currentService.id} cuando lo tengas.</div>`;
+}
+
+async function renderVariables() {
+  drawerBody.innerHTML = '<div class="muted-note">Cargando variables...</div>';
+  try {
+    const res = await fetch('/api/get-vars');
+    if (res.status === 401) {
+      drawerBody.innerHTML = '<div class="muted-note">Protegido por ADMIN_TOKEN. Esta vista de ejemplo no envía el token; añade tu propio flujo de login si quieres verlas aquí.</div>';
+      return;
+    }
+    const data = await res.json();
+    const lines = (data.env || '').split('\n').filter(l => l.includes('='));
+    drawerBody.innerHTML = lines.map(l => {
+      const [k, ...rest] = l.split('=');
+      const v = rest.join('=');
+      const masked = v.length > 4 ? v.slice(0, 3) + '•'.repeat(Math.min(14, v.length - 3)) : '••••';
+      return `<div class="var-row"><span class="var-key">${k}</span><span class="var-val">${masked}</span></div>`;
+    }).join('') || '<div class="muted-note">Sin variables definidas todavía.</div>';
+  } catch (e) {
+    drawerBody.innerHTML = '<div class="muted-note">No se pudo contactar con /api/get-vars.</div>';
+  }
+}
+
+function renderMetrics() {
+  drawerBody.innerHTML = `<div class="muted-note">Conecta esta pestaña a tu fuente real de métricas (docker stats, Prometheus, etc). Hoy app.js no expone un endpoint de métricas.</div>`;
+}
+
+async function renderLogs() {
+  drawerBody.innerHTML = '<div class="muted-note">Cargando registros...</div>';
+  try {
+    const res = await fetch('/api/logs/' + (currentService.apiName || currentService.id));
+    if (res.status === 401) {
+      drawerBody.innerHTML = '<div class="muted-note">Protegido por ADMIN_TOKEN.</div>';
+      return;
+    }
+    const text = await res.text();
+    drawerBody.innerHTML = `<pre class="log-box">${text.replace(/</g, '&lt;')}</pre>`;
+  } catch (e) {
+    drawerBody.innerHTML = '<div class="muted-note">No se pudo contactar con /api/logs.</div>';
+  }
+}
+
+function renderSettings() {
+  drawerBody.innerHTML = `
+    <div class="field"><label>Nombre del servicio</label><input value="${currentService.name}" readonly></div>
+    <div class="field"><label>Volumen persistente</label><input value="${currentService.volume}" readonly></div>
+    <div class="muted-note">Estos campos son de solo lectura en esta versión de ejemplo. Conéctalos a /api/save-vars o a tu propio endpoint de configuración cuando quieras editarlos de verdad.</div>
+  `;
+}
+</script>
 </body>
 </html>
