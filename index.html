@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Railway - Panel de Control Real</title>
+    <style>
+        body { 
+            background-color: #0b0b0f; background-image: radial-gradient(#1e1e24 1px, transparent 1px); background-size: 24px 24px;
+            color: #d1d5db; font-family: system-ui, -apple-system, sans-serif; margin: 0; padding: 0; height: 100vh; overflow: hidden;
+            display: flex; flex-direction: column;
+        }
+        header { height: 56px; background-color: #0e0e12; display: flex; align-items: center; justify-content: space-between; padding: 0 24px; box-sizing: border-box; border-bottom: 1px solid #2d3748; z-index: 30; }
+        .logo-container { display: flex; align-items: center; gap: 12px; }
+        .logo-r { width: 20px; height: 20px; background: white; color: black; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 12px; }
+        .project-title { font-size: 14px; font-weight: 600; color: #9ca3af; }
+        .tag-prod { font-size: 12px; background: #1f2937; color: #9ca3af; padding: 2px 8px; border-radius: 4px; }
+        .btn-add { background: #9333ea; color: white; border: none; padding: 6px 16px; border-radius: 8px; font-weight: 600; font-size: 12px; cursor: pointer; }
+        .tag-expired { font-size: 12px; background: #451a03; color: #f97316; border: 1px solid #7c2d12; padding: 4px 12px; border-radius: 9999px; font-weight: 500; margin-right: 12px; }
+        main { flex: 1; display: flex; align-items: center; justify-content: center; gap: 80px; padding: 40px; position: relative; z-index: 10; }
+        .card { width: 240px; background: #14141a; border: 1px solid #2d3748; border-radius: 12px; padding: 20px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); transition: all 0.2s; cursor: pointer; }
+        .card:hover { border-color: #4b5563; transform: translateY(-2px); }
+        .card.main-app { border-color: #9333ea; background: #16161f; }
+        .card-title { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; font-weight: bold; color: #f3f4f6; }
+        .status { display: flex; align-items: center; gap: 8px; font-size: 12px; color: #a1a1aa; margin-bottom: 16px; }
+        .dot { width: 8px; height: 8px; background: #6b7280; border-radius: 50%; }
+        .dot.online { background: #22c55e; }
+        .footer-card { font-size: 12px; color: #6b7280; border-top: 1px solid #1f2937; padding-top: 12px; display: flex; align-items: center; gap: 6px; }
+        .app-url { font-size: 10px; color: #6b7280; margin: -10px 0 16px 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .drawer { position: fixed; top: 56px; right: -500px; width: 450px; height: calc(100vh - 56px); background: #0e0e12; border-left: 1px solid #2d3748; box-shadow: -10px 0 30px rgba(0,0,0,0.5); transition: right 0.3s ease; z-index: 40; display: flex; flex-direction: column; }
+        .drawer.open { right: 0; }
+        .drawer-header { padding: 20px; border-bottom: 1px solid #2d3748; display: flex; justify-content: space-between; align-items: center; }
+        .drawer-tabs { display: flex; background: #14141a; border-bottom: 1px solid #2d3748; padding: 0 10px; }
+        .tab-btn { padding: 12px 16px; background: transparent; border: none; color: #9ca3af; cursor: pointer; font-size: 13px; font-weight: 500; border-bottom: 2px solid transparent; }
+        .tab-btn.active { color: #a855f7; border-bottom-color: #a855f7; }
+        .drawer-content { flex: 1; padding: 20px; overflow-y: auto; }
+        .tab-panel { display: none; }
+        .tab-panel.active { display: block; }
+        textarea { width: 100%; height: 250px; background: #07070a; border: 1px solid #2d3748; border-radius: 8px; color: #34d399; font-family: monospace; padding: 12px; box-sizing: border-box; resize: none; }
+        .logs-box { background: #07070a; border: 1px solid #2d3748; border-radius: 8px; padding: 12px; font-family: monospace; font-size: 11px; color: #a7f3d0; height: 300px; overflow-y: auto; white-space: pre-wrap; }
+        .connect-box { display: flex; flex-direction: column; align-items: center; gap: 24px; position: relative; }
+        .arrow-container { width: 24px; height: 32px; display: flex; align-items: center; justify-content: center; }
+        .arrow-svg { width: 32px; height: 32px; fill: none; stroke: #4b5563; stroke-width: 2.5; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo-container">
+            <div class="logo-r">R</div>
+            <span class="project-title">espontaneidad perfecta</span>
+            <span class="tag-prod">producción</span>
+        </div>
+        <div><span class="tag-expired">Prueba completada</span><button class="btn-add">+ Agregar</button></div>
+    </header>
+
+    <main>
+        <div class="card" onclick="openDrawer('mongodb', 'postgres-zocoia-postgres-1')">
+            <div class="card-title"><span>🍃</span><span>MongoDB</span></div>
+            <div class="status"><span id="dot-mongo" class="dot online"></span>En línea (Simulado)</div>
+            <div class="footer-card">📁 volumen de mongodb</div>
+        </div>
+
+        <div class="connect-box">
+            <div class="card" onclick="openDrawer('Postgres', 'postgres-zocoia-postgres-1')">
+                <div class="card-title"><span style="color:#60a5fa">🐘</span><span>Postgres</span></div>
+                <div class="status"><span id="dot-postgres" class="dot"></span><span id="txt-postgres">Comprobando...</span></div>
+                <div class="footer-card">📁 volumen de postgres</div>
+            </div>
+
+            <div class="arrow-container">
+                <svg class="arrow-svg" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 19V5m0 0l-4 4m4-4l4 4" /></svg>
+            </div>
+
+            <div class="card main-app" onclick="openDrawer('zocoia', 'zocoia-gateway')">
+                <div class="card-title"><span>🐙</span><span>zocoia</span></div>
+                <div class="app-url">zocoia-production.up.railway.app</div>
+                <div class="status"><span id="dot-zocoia" class="dot"></span><span id="txt-zocoia">Comprobando...</span></div>
+                <div class="footer-card">📁 zocoia-volumen</div>
+            </div>
+        </div>
+    </main>
+
+    <div id="railwayDrawer" class="drawer">
+        <div class="drawer-header">
+            <h2 id="drawerTitle" style="margin:0; font-size:18px; color:white;">Servicio</h2>
+            <button style="background:transparent; border:none; color:#9ca3af; font-size:20px; cursor:pointer;" onclick="closeDrawer()">×</button>
+        </div>
+        <div class="drawer-tabs">
+            <button class="tab-btn active" onclick="switchTab(event, 'tab-deploy')">Despliegues</button>
+            <button class="tab-btn" onclick="switchTab(event, 'tab-vars')">Variables</button>
+            <button class="tab-btn" onclick="switchTab(event, 'tab-logs')">Consola Real</button>
+        </div>
+        <div class="drawer-content">
+            <div id="tab-deploy" class="tab-panel active">
+                <div style="padding:12px; background:#14141a; border:1px solid #2d3748; border-radius:8px; display:flex; justify-content:space-between; align-items:center;">
+                    <div><div style="color:white; font-weight:600; font-size:14px;">Producción Activa</div><div style="color:#6b7280; font-size:12px;">Mapeado en tiempo real</div></div>
+                    <span style="color:#22c55e; font-size:12px; background:#14532d; padding:2px 8px; border-radius:4px;">Live</span>
+                </div>
+            </div>
+            <div id="tab-vars" class="tab-panel">
+                <p style="font-size:12px; color:#9ca3af; margin-top:0;">Pega aquí tus claves secretas en bloque (.env) para guardarlas en el servidor:</p>
+                <textarea id="envBox" placeholder="KEY=valor"></textarea>
+                <button class="btn-add" style="margin-top:12px; width:100%;" onclick="saveVarsToServer()">Guardar en Producción Real</button>
+            </div>
+            <div id="tab-logs" class="tab-panel">
+                <div id="logsContent" class="logs-box">Cargando logs del servidor en vivo...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentContainer = '';
+        function checkRealStatus() {
+            fetch('/api/status').then(res => res.json()).then(data => {
+                const list = data.containers.join(' ');
+                
+                const pgActive = list.includes('postgres-zocoia');
+                document.getElementById('dot-postgres').className = 'dot ' + (pgActive ? 'online' : '');
+                document.getElementById('txt-postgres').innerText = pgActive ? 'En línea' : 'Interrumpido';
+
+                const zocoiaActive = list.includes('zocoia-gateway') || list.includes('railway-clone');
+                document.getElementById('dot-zocoia').className = 'dot ' + (zocoiaActive ? 'online' : '');
+                document.getElementById('txt-zocoia').innerText = zocoiaActive ? 'En línea' : 'Interrumpido';
+            });
+        }
+
+        function openDrawer(serviceName, containerName) {
+            currentContainer = containerName;
+            document.getElementById('drawerTitle').innerText = serviceName;
+            document.getElementById('railwayDrawer').classList.add('open');
+            
+            if(serviceName === 'zocoia') {
+                document.getElementById('envBox').value = "PORT=8080\nNODE_ENV=production\nDB_HOST=165.227.130.179\nDB_PORT=5432\nDB_DATABASE=railway\nDB_USERNAME=postgres\nDB_PASSWORD=DesiyivanREDACTED\nDATABASE_URL=postgresql://postgres:DesiyivanREDACTED@165.227.130.179:5432/railway";
+            } else {
+                document.getElementById('envBox').value = "# Parámetros de la base de datos interna";
+            }
+
+            document.getElementById('logsContent').innerText = "Conectando al stream del contenedor...";
+            fetch('/api/logs/' + containerName).then(res => res.text()).then(text => {
+                document.getElementById('logsContent').innerText = text;
+            });
+        }
+
+        function closeDrawer() { document.getElementById('railwayDrawer').classList.remove('open'); }
+        function switchTab(e, tabId) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-panel').forEach(panel => panel.classList.remove('active'));
+            e.target.classList.add('active');
+            document.getElementById(tabId).classList.add('active');
+        }
+
+        function saveVarsToServer() {
+            const data = document.getElementById('envBox').value;
+            fetch('/api/save-vars', { method: 'POST', body: data }).then(res => res.json()).then(res => {
+                alert(res.message);
+                closeDrawer();
+            });
+        }
+
+        setInterval(checkRealStatus, 3000);
+        checkRealStatus();
+    </script>
+</body>
+</html>

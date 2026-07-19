@@ -1,0 +1,11 @@
+version: "3.8"
+services:
+  railway-ui:
+    image: node:18-alpine
+    working_dir: /app
+    ports:
+      - "8080:5001"
+    volumes:
+      - /root/railway-clone:/app
+    command: node app.js
+    restart: always
