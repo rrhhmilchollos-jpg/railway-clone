@@ -1,9 +1,52 @@
-version: "3.8"
+version: '3.8'
+
 services:
-  railway-ui:
-    build: .
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
     ports:
-      - "8080:5001"
-    volumes:
-      - ./.env:/app/.env
+      - "80:5001" # Mapea el puerto 80 del host al 5001 del contenedor
+    environment:
+      NODE_ENV: production
+      PORT: 5001
+      ADMIN_TOKEN: ${ADMIN_TOKEN} # Se leerá del .env del host
+      PGHOST: postgres
+      PGPORT: 5432
+      PGUSER: ${POSTGRES_USER}
+      PGPASSWORD: ${POSTGRES_PASSWORD}
+      PGDATABASE: ${POSTGRES_DB}
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      MONGOHOST: mongodb
+      MONGOPORT: 27017
+      MONGOUSER: ${MONGO_USER}
+      MONGOPASSWORD: ${MONGO_PASSWORD}
+      MONGO_URL: mongodb://${MONGO_USER}:${MONGO_PASSWORD}@mongodb:27017/${MONGO_DB}?authSource=admin
+    depends_on:
+      - postgres
+      - mongodb
     restart: unless-stopped
+
+  postgres:
+    image: postgres:13
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  mongodb:
+    image: mongo:4.4
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USER}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
+      MONGO_INITDB_DATABASE: ${MONGO_DB}
+    volumes:
+      - mongodb_data:/data/db
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  mongodb_data:
