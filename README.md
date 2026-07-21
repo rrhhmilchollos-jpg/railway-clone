@@ -51,3 +51,4 @@ npm start              # arranca en http://localhost:5001
 - El `.env` real no existe en este repositorio ni en su historial.
 - Todas las credenciales (MongoDB, Redis, ADMIN_TOKEN) se inyectan como variables de entorno en Coolify.
 - Si una credencial se filtra, rótala inmediatamente y actualízala solo en Coolify.
+
